@@ -15,17 +15,17 @@ const NewsFeed = () => {
   // Environment variables are recommended for sensitive data like API keys
   const API_KEY = "c003f70919aa4fc4bb23071b5c77755e";
   const defaultImage =
-    "https://phandroid.com/wp-content/uploads/2019/09/apple_homepod_review_7_thumb800-Large.jpeg";
+    "http://phandroid.com/wp-content/uploads/2019/09/apple_homepod_review_7_thumb800-Large.jpeg";
 
   // Extract category from the pathname, removing the leading "/"
   const category = location.pathname.slice(1);
 
   // Construct API URL based on category
-  let API_URL = `https://newsapi.org/v2/top-headlines/sources?country=us&apiKey=${API_KEY}`;
+  let API_URL = `http://newsapi.org/v2/top-headlines/sources?country=us&apiKey=${API_KEY}`;
   if (category === "India") {
-    API_URL = `https://newsapi.org/v2/top-headlines/sources?country=in&apiKey=${API_KEY}`;
+    API_URL = `http://newsapi.org/v2/top-headlines/sources?country=in&apiKey=${API_KEY}`;
   } else if (category) {
-    API_URL = `https://newsapi.org/v2/top-headlines/sources?category=${category}&apiKey=${API_KEY}`;
+    API_URL = `http://newsapi.org/v2/top-headlines/sources?category=${category}&apiKey=${API_KEY}`;
   }
 
   useEffect(() => {
