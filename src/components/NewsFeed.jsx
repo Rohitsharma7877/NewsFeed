@@ -31,7 +31,7 @@ const NewsFeed = () => {
     };
 
     try {
-      const response = await axios.get("http://localhost:4000/news", {
+      const response = await axios.get("https://newsbackend-ejzu.onrender.com/news", {
         params,
       });
       setSources(response.data.sources);
