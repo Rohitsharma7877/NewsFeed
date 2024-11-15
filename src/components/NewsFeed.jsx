@@ -8,50 +8,49 @@ const NewsFeed = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [selectedNews, setSelectedNews] = useState(null);
   const itemsPerPage = 7;
   const location = useLocation();
 
-  // Environment variables are recommended for sensitive data like API keys
-  const API_KEY = "c003f70919aa4fc4bb23071b5c77755e";
   const defaultImage =
     "http://phandroid.com/wp-content/uploads/2019/09/apple_homepod_review_7_thumb800-Large.jpeg";
 
-  // Extract category from the pathname, removing the leading "/"
+  // Extract category from the pathname
   const category = location.pathname.slice(1);
 
-  // Construct API URL based on category
-  let API_URL = `http://newsapi.org/v2/top-headlines/sources?country=us&apiKey=${API_KEY}`;
-  if (category === "India") {
-    API_URL = `http://newsapi.org/v2/top-headlines/sources?country=in&apiKey=${API_KEY}`;
-  } else if (category) {
-    API_URL = `http://newsapi.org/v2/top-headlines/sources?category=${category}&apiKey=${API_KEY}`;
-  }
+  const fetchSources = async () => {
+    setLoading(true);
+    setError(null);
+
+    const params = {
+      country: category === "India" ? "in" : "us",
+      category: category !== "India" && category ? category : "",
+      page: currentPage,
+      itemsPerPage,
+    };
+
+    try {
+      const response = await axios.get("http://localhost:4000/news", {
+        params,
+      });
+      setSources(response.data.sources);
+      setTotalPages(response.data.totalPages);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchSources = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const response = await axios.get(API_URL);
-        setSources(response.data.sources);
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchSources();
-  }, [API_URL]);
+  }, [currentPage, category]);
 
   const handlePageChange = (event, value) => {
     setCurrentPage(value);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
-
-  const indexOfLastSource = currentPage * itemsPerPage;
-  const indexOfFirstSource = indexOfLastSource - itemsPerPage;
-  const currentSources = sources.slice(indexOfFirstSource, indexOfLastSource);
 
   if (loading)
     return <p className="text-center text-lg font-bold">Loading...</p>;
@@ -64,7 +63,6 @@ const NewsFeed = () => {
 
   return (
     <div className="container mx-auto p-4 pt-20">
-      {/* Background Overlay */}
       {selectedNews && (
         <div className="fixed inset-0 bg-gray-400 bg-opacity-70 flex justify-center items-center z-50">
           <div className="bg-white w-full max-w-3xl p-6 rounded-lg relative">
@@ -91,20 +89,19 @@ const NewsFeed = () => {
         </div>
       )}
 
-      {/* News List */}
       <div className="bg-red-500 text-white text-center p-2 mb-4 rounded-md">
         <h2 className="text-lg font-bold">
           For the best experience, use the inshorts app
         </h2>
         <div className="mt-2 flex justify-center">
           <a
-            href="https://example.com/app-store" // Replace with the actual URL
+            href="https://example.com/app-store"
             className="bg-gray-800 text-white px-4 py-2 rounded-md mr-2"
           >
             Download on the App Store
           </a>
           <a
-            href="https://example.com/google-play" // Replace with the actual URL
+            href="https://example.com/google-play"
             className="bg-gray-800 text-white px-4 py-2 rounded-md"
           >
             Get it on Google Play
@@ -112,14 +109,14 @@ const NewsFeed = () => {
         </div>
       </div>
 
-      {currentSources.map((source, index) => (
+      {sources.map((source, index) => (
         <div
           key={index}
           onClick={() => setSelectedNews(source)}
           className="flex flex-col md:flex-row items-start md:items-center border rounded-lg shadow-md overflow-hidden mb-4 bg-white w-full md:w-[70%] md:ml-[15%] cursor-pointer"
         >
           <img
-            src={source.urlToImage || defaultImage} // Use default image if urlToImage is not available
+            src={defaultImage}
             alt="News"
             className="w-full md:w-[40%] h-80 md:h-[335px] object-cover "
           />
@@ -134,10 +131,9 @@ const NewsFeed = () => {
         </div>
       ))}
 
-      {/* Pagination */}
       <div className="flex justify-center mt-4">
         <Pagination
-          count={Math.ceil(sources.length / itemsPerPage)}
+          count={totalPages}
           page={currentPage}
           onChange={handlePageChange}
           shape="rounded"
